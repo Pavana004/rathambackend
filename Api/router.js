@@ -8,7 +8,28 @@ const session = require("../schemas/session");
 const { v4: uuidv4 } = require('uuid');
 
 
-// Student login
+// Student register/login
+
+router.post("/register", async (req, res) => {
+
+    try {
+        const studentExit = await student.findOne({ universityId: req.body.universityId })
+        if (studentExit) {
+            return res.status(400).json("Already register your id ");
+        }
+        const psHash = await bcrypt.hash(req.body.password, 10);
+        const data = new student({
+            universityId: req.body.universityId,
+            password: psHash,
+        });
+        const result = await data.save();
+        res.json(result);
+
+    } catch (error) {
+        res.status(500).send({ message: "Internal Server Error" });
+    }
+
+});
 
 router.post("/login", async (req, res) => {
     try {
@@ -43,7 +64,7 @@ router.get('/sessions/free-dean', verifyToken, async (req, res) => {
 
 // A picks one of the above slots and books
 
-router.post('/sessions/book-dean', validateToken, async (req, res) => {
+router.post('/sessions/book-dean', verifyToken, async (req, res) => {
     try {
         const sessionSlot = await session.findById(req.body.id);
         if (!sessionSlot || sessionSlot.booked || sessionSlot.studentID) {
@@ -61,7 +82,28 @@ router.post('/sessions/book-dean', validateToken, async (req, res) => {
 });
 
 
-// Dean login 
+// Dean login/register
+
+router.post("/register/dean", async (req, res) => {
+
+    try {
+        const deanExit = await dean.findOne({ deanUniversityId: req.body.deanUniversityId })
+        if (deanExit) {
+            return res.status(400).json("Already register your id ");
+        }
+        const psHash = await bcrypt.hash(req.body.password, 10);
+        const data = new dean({
+            deanUniversityId: req.body.deanUniversityId,
+            password: psHash,
+        });
+        const result = await data.save();
+        res.json(result);
+
+    } catch (error) {
+        res.status(500).send({ message: "Internal Server Error" });
+    }
+
+});
 
 router.post("/dean/login", async (req, res) => {
     try {
